@@ -15,7 +15,11 @@ dependencies:
     sdk: flutter
 
   http: ^0.12.2
+
   cached_network_image: ^2.5.0
+  flutter_bloc: ^5.0.0
+  equatable: ^1.0.0
+  rxdart: ^0.23.1
 
   cupertino_icons: ^1.0.0
 

@@ -1,4 +1,6 @@
-class GifResult {
+import 'package:equatable/equatable.dart';
+
+class GifResult extends Equatable {
   List<Data> data;
 
   GifResult({this.data});
@@ -11,6 +13,9 @@ class GifResult {
       });
     }
   }
+
+  @override
+  List<Object> get props => [data];
 }
 
 class Data {
@@ -21,6 +26,11 @@ class Data {
   Data.fromJson(Map<String, dynamic> json) {
     images =
         json['images'] != null ? new Images.fromJson(json['images']) : null;
+  }
+
+  @override
+  String toString() {
+    return 'Images: ${images.downsized.url}\n';
   }
 }
 
