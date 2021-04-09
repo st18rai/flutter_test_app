@@ -8,21 +8,14 @@ abstract class GifEvent extends Equatable {
 class GifAppStarted extends GifEvent {}
 
 class GifSearchPressed extends GifEvent {
-  String _query;
+  final String query;
 
-  String get query => _query;
-
-  set query(String value) {
-    _query = value;
-  }
+  GifSearchPressed(this.query);
 }
 
 class GifMoreFetched extends GifEvent {
-  String _query;
+  final String query;
+  final bool hasMore;
 
-  String get query => _query;
-
-  set query(String value) {
-    _query = value;
-  }
+  GifMoreFetched(this.query, this.hasMore);
 }

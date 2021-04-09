@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_test_app/bloc/gif_bloc.dart';
-import 'package:flutter_test_app/bloc/gif_event.dart';
-import 'package:flutter_test_app/gif_provider.dart';
-import 'package:flutter_test_app/home_page.dart';
+import 'package:flutter_test_app/ui/bloc/gif_bloc.dart';
+import 'package:flutter_test_app/ui/bloc/gif_event.dart';
+import 'package:flutter_test_app/gif_ds.dart';
+import 'package:flutter_test_app/ui/page/home_screen.dart';
 
 void main() {
   runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  // ignore: close_sinks
+  final GifBloc bloc = GifBloc(gifDs: GifDs())..add(GifAppStarted());
+  final HomeScreenData screenData = HomeScreenData();
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -22,9 +26,8 @@ class MyApp extends StatelessWidget {
           title: Text('Flutter Test App'),
         ),
         body: BlocProvider<GifBloc>(
-          create: (context) =>
-              GifBloc(gifProvider: GifProvider())..add(GifAppStarted()),
-          child: HomePage(),
+          create: (context) => bloc,
+          child: HomeScreen(bloc, screenData),
         ),
       ),
     );

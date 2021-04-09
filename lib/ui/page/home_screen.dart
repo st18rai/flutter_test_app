@@ -1,23 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_test_app/bloc/gif_bloc.dart';
-import 'package:flutter_test_app/bloc/gif_event.dart';
-import 'package:flutter_test_app/bloc/gif_state.dart';
+import 'package:flutter_test_app/ui/bloc/gif_bloc.dart';
+import 'package:flutter_test_app/ui/bloc/gif_event.dart';
+import 'package:flutter_test_app/ui/bloc/gif_state.dart';
 
-class HomePage extends StatefulWidget {
+import '../../model.dart';
+
+class HomeScreen extends StatefulWidget {
+  final GifBloc bloc;
+  final HomeScreenData screenData;
+
+  HomeScreen(this.bloc, this.screenData);
+
   @override
-  _HomePageState createState() => _HomePageState();
+  _HomeScreenState createState() => _HomeScreenState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomeScreenState extends State<HomeScreen> {
   final _textController = TextEditingController();
-  GifBloc _gifBloc;
-
-  @override
-  void initState() {
-    super.initState();
-    _gifBloc = BlocProvider.of<GifBloc>(context);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,9 +51,16 @@ class _HomePageState extends State<HomePage> {
                     ),
                     onPressed: () {
                       setState(() {
-                        _gifBloc.add(
-                            GifSearchPressed()..query = _textController.text);
-                        // print('search button');
+                        widget.screenData.gifs.clear();
+                        widget.screenData.hasMore = true;
+                        widget.screenData.query = _textController.text;
+                        // print(
+                        //     'Home: before search gifs = ${widget.screenData.gifs.length}');
+                        print(
+                            'Home: screenData query = ${widget.screenData.query}');
+                        widget.bloc
+                            .add(GifSearchPressed(widget.screenData.query));
+                        print('Home: search button');
                       });
                     },
                   ),
@@ -62,27 +69,12 @@ class _HomePageState extends State<HomePage> {
             ),
             Expanded(
               child: BlocBuilder<GifBloc, GifState>(builder: (context, state) {
-                // print('state: $state');
+                print('Home: state = $state');
 
                 if (state is GifLoading) {
                   return Center(
                     child: CircularProgressIndicator(
                       backgroundColor: Colors.yellowAccent,
-                    ),
-                  );
-                }
-
-                if (state is GifLoadingMore) {
-                  return Container(
-                    alignment: Alignment.center,
-                    child: Center(
-                      child: SizedBox(
-                        width: 33,
-                        height: 33,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 1.5,
-                        ),
-                      ),
                     ),
                   );
                 }
@@ -96,19 +88,28 @@ class _HomePageState extends State<HomePage> {
                 }
 
                 if (state is GifSuccess) {
-                  // print('gif success');
+                  // print('Home: gif success');
 
-                  if (state.gifs.isEmpty) {
+                  print(
+                      'Home: screenData gifs before add = ${widget.screenData.gifs.length}');
+                  widget.screenData.gifs.addAll(state.gifs);
+
+                  if (widget.screenData.gifs.isEmpty) {
+                    widget.screenData.hasMore = false;
                     return InfoBox('Nothing found');
                   }
+
+                  print(
+                      'Home: screenData gifs after add = ${widget.screenData.gifs.length}');
+                  // print('Home: state gifs = ${state.gifs.length}');
 
                   return NotificationListener<ScrollNotification>(
                     onNotification: (ScrollNotification scrollInfo) {
                       if (scrollInfo is ScrollEndNotification &&
                           scrollInfo.metrics.extentAfter == 0) {
-                        // print('load more');
-                        _gifBloc.add(
-                            GifMoreFetched()..query = _textController.text);
+                        print('Home: load more');
+                        widget.bloc.add(GifMoreFetched(widget.screenData.query,
+                            widget.screenData.hasMore));
 
                         return true;
                       }
@@ -121,11 +122,12 @@ class _HomePageState extends State<HomePage> {
                       ),
                       padding: EdgeInsets.only(top: 10),
                       physics: const AlwaysScrollableScrollPhysics(),
-                      itemCount: state.gifs.length,
+                      itemCount: widget
+                          .screenData.gifs.length, // change when gifs added
                       cacheExtent: 5,
                       itemBuilder: (BuildContext context, int index) {
                         return Image.network(
-                          state.gifs[index].images.downsized.url,
+                          widget.screenData.gifs[index].images.downsized.url,
                           loadingBuilder: (context, widget, imageChunkEvent) {
                             return imageChunkEvent == null
                                 ? widget
@@ -172,4 +174,10 @@ class InfoBox extends StatelessWidget {
       ),
     );
   }
+}
+
+class HomeScreenData {
+  String query;
+  List<Data> gifs = <Data>[];
+  bool hasMore = true;
 }
