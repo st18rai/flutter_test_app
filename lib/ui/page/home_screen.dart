@@ -4,7 +4,8 @@ import 'package:flutter_test_app/ui/bloc/gif_bloc.dart';
 import 'package:flutter_test_app/ui/bloc/gif_event.dart';
 import 'package:flutter_test_app/ui/bloc/gif_state.dart';
 
-import '../../model.dart';
+import '../../model/model.dart';
+import 'home_screen_widgets.dart';
 
 class HomeScreen extends StatefulWidget {
   final GifBloc bloc;
@@ -37,7 +38,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       controller: _textController,
                       decoration: InputDecoration(
                           border: InputBorder.none,
-                          hintText: 'Enter a search term'),
+                          hintText: widget.screenData.hintText),
                     ),
                   ),
                 ),
@@ -50,64 +51,63 @@ class _HomeScreenState extends State<HomeScreen> {
                       color: Colors.white,
                     ),
                     onPressed: () {
-                      setState(() {
-                        widget.screenData.gifs.clear();
-                        widget.screenData.hasMore = true;
-                        widget.screenData.query = _textController.text;
-                        // print(
-                        //     'Home: before search gifs = ${widget.screenData.gifs.length}');
-                        print(
-                            'Home: screenData query = ${widget.screenData.query}');
-                        widget.bloc
-                            .add(GifSearchPressed(widget.screenData.query));
-                        print('Home: search button');
-                      });
+                      widget.screenData.gifs.clear();
+                      widget.screenData.hasMore = true;
+                      widget.screenData.query = _textController.text;
+                      // print(
+                      //     'Home: screenData query = ${widget.screenData.query}');
+                      widget.bloc
+                          .add(GifSearchPressed(widget.screenData.query));
+                      // print('Home: search button');
                     },
                   ),
                 ),
               ],
             ),
             Expanded(
-              child: BlocBuilder<GifBloc, GifState>(builder: (context, state) {
-                print('Home: state = $state');
+              child: BlocListener<GifBloc, GifState>(
+                listener: (context, state) {
+                  if (state is GifSuccess) {
+                    // print(
+                    //     'Home: screenData gifs before add = ${widget.screenData.gifs.length}');
+                    widget.screenData.gifs.addAll(state.gifs);
 
-                if (state is GifLoading) {
-                  return Center(
-                    child: CircularProgressIndicator(
-                      backgroundColor: Colors.yellowAccent,
-                    ),
-                  );
-                }
+                    if (widget.screenData.gifs.isEmpty) {
+                      widget.screenData.hasMore = false;
+                    }
+                  }
+                },
+                child:
+                    BlocBuilder<GifBloc, GifState>(builder: (context, state) {
+                  // print('Home: state = $state');
 
-                if (state is GifFailure) {
-                  return InfoBox('Something went wrong');
-                }
-
-                if (state is GifInitial) {
-                  return InfoBox('Start searching gifs!');
-                }
-
-                if (state is GifSuccess) {
-                  // print('Home: gif success');
-
-                  print(
-                      'Home: screenData gifs before add = ${widget.screenData.gifs.length}');
-                  widget.screenData.gifs.addAll(state.gifs);
-
-                  if (widget.screenData.gifs.isEmpty) {
-                    widget.screenData.hasMore = false;
-                    return InfoBox('Nothing found');
+                  if (state is GifLoading) {
+                    return LoadingWidget(Colors.yellowAccent);
                   }
 
-                  print(
-                      'Home: screenData gifs after add = ${widget.screenData.gifs.length}');
+                  if (state is GifFailure) {
+                    return InfoWidget(widget.screenData.errorText);
+                  }
+
+                  if (state is GifInitial) {
+                    return InfoWidget(widget.screenData.initialText);
+                  }
+
+                  // print('Home: gif success');
+
+                  if (widget.screenData.gifs.isEmpty) {
+                    return InfoWidget(widget.screenData.nothingFoundText);
+                  }
+
+                  // print(
+                  //     'Home: screenData gifs after add = ${widget.screenData.gifs.length}');
                   // print('Home: state gifs = ${state.gifs.length}');
 
                   return NotificationListener<ScrollNotification>(
                     onNotification: (ScrollNotification scrollInfo) {
                       if (scrollInfo is ScrollEndNotification &&
                           scrollInfo.metrics.extentAfter == 0) {
-                        print('Home: load more');
+                        // print('Home: load more');
                         widget.bloc.add(GifMoreFetched(widget.screenData.query,
                             widget.screenData.hasMore));
 
@@ -122,28 +122,29 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       padding: EdgeInsets.only(top: 10),
                       physics: const AlwaysScrollableScrollPhysics(),
-                      itemCount: widget
-                          .screenData.gifs.length, // change when gifs added
+                      itemCount: widget.screenData.hasMore
+                          ? widget.screenData.gifs.length + 1
+                          : widget.screenData.gifs.length,
                       cacheExtent: 5,
                       itemBuilder: (BuildContext context, int index) {
-                        return Image.network(
-                          widget.screenData.gifs[index].images.downsized.url,
-                          loadingBuilder: (context, widget, imageChunkEvent) {
-                            return imageChunkEvent == null
-                                ? widget
-                                : Center(
-                                    child: CircularProgressIndicator(
-                                      backgroundColor: Colors.yellowAccent,
-                                    ),
-                                  );
-                          },
-                        );
+                        if (index == widget.screenData.gifs.length &&
+                            widget.screenData.hasMore) {
+                          return LoadingWidget(Colors.white);
+                        } else {
+                          return Image.network(
+                            widget.screenData.gifs[index].images.downsized.url,
+                            loadingBuilder: (context, widget, imageChunkEvent) {
+                              return imageChunkEvent == null
+                                  ? widget
+                                  : LoadingWidget(Colors.yellowAccent);
+                            },
+                          );
+                        }
                       },
                     ),
                   );
-                }
-                return InfoBox('Start searching gifs!');
-              }),
+                }),
+              ),
             ),
           ],
         ),
@@ -158,25 +159,12 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-class InfoBox extends StatelessWidget {
-  final String text;
-  InfoBox(this.text);
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text(
-        text,
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: 32,
-        ),
-      ),
-    );
-  }
-}
-
 class HomeScreenData {
+  final String hintText = 'Enter a search term';
+  final String nothingFoundText = 'Nothing found';
+  final String initialText = 'Start searching gifs!';
+  final String errorText = 'Something went wrong';
+
   String query;
   List<Data> gifs = <Data>[];
   bool hasMore = true;

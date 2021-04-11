@@ -5,8 +5,6 @@ abstract class GifEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class GifAppStarted extends GifEvent {}
-
 class GifSearchPressed extends GifEvent {
   final String query;
 

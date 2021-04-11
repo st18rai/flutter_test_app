@@ -1,5 +1,5 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter_test_app/model.dart';
+import 'package:flutter_test_app/model/model.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 

@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test_app/ui/bloc/gif_event.dart';
 import 'package:flutter_test_app/ui/bloc/gif_state.dart';
-import 'package:flutter_test_app/gif_ds.dart';
-import 'package:flutter_test_app/model.dart';
+import 'package:flutter_test_app/src/ds_gif.dart';
+import 'package:flutter_test_app/model/model.dart';
 import 'package:rxdart/rxdart.dart';
 
 class GifBloc extends Bloc<GifEvent, GifState> {
@@ -26,18 +26,16 @@ class GifBloc extends Bloc<GifEvent, GifState> {
 
   @override
   Stream<GifState> mapEventToState(GifEvent event) async* {
-    final currentState = state;
-
-    print('Bloc: event = $event');
+    // print('Bloc: event = $event');
 
     if (event is GifSearchPressed) {
-      // yield GifLoading();
+      yield GifLoading();
 
       try {
         _offset = 0;
         final gifs = await _getGifs(event.query, _offset, _limit);
         yield GifSuccess(gifs: gifs);
-        print('Bloc: initial fetched success: ${gifs.length}');
+        // print('Bloc: initial fetched success: ${gifs.length}');
 
         return;
       } catch (_) {
@@ -46,22 +44,22 @@ class GifBloc extends Bloc<GifEvent, GifState> {
     }
 
     if (event is GifMoreFetched) {
-      print('Bloc: more fetched state: $currentState');
+      // print('Bloc: more fetched state: $currentState');
 
       try {
         if (event.hasMore) {
           _offset = _offset + _limit;
 
           final gifs = await _getGifs(event.query, _offset, _limit);
-          print('Bloc: more fetched success: ${gifs.length}');
+          // print('Bloc: more fetched success: ${gifs.length}');
           yield GifSuccess(gifs: gifs);
-          print('Bloc: offset: $_offset');
+          // print('Bloc: offset: $_offset');
 
           // print('images: ${gifs.toString()}');
-          return;
         }
+        return;
       } catch (e) {
-        print('Bloc: Failure is: + $e');
+        // print('Bloc: Failure is: + $e');
         yield GifFailure();
       }
     }
