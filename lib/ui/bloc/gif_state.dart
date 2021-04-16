@@ -8,22 +8,18 @@ abstract class GifState extends Equatable {
   List<Object> get props => [];
 }
 
-class GifInitial extends GifState {}
+class GifInitialState extends GifState {}
 
-class GifFailure extends GifState {}
+class GifFailureState extends GifState {}
 
-class GifLoading extends GifState {}
+class GifLoadingState extends GifState {}
 
-class GifSuccess extends GifState {
+class GifSuccessState extends GifState {
   final List<Data> gifs;
+  final bool hasMore;
 
-  const GifSuccess({
-    this.gifs,
-  });
-
-  @override
-  List<Object> get props => [gifs];
+  const GifSuccessState({this.gifs, this.hasMore});
 
   @override
-  String toString() => 'GifSuccess { gifs: ${gifs.length} }';
+  List<Object> get props => [gifs, hasMore];
 }

@@ -1,19 +1,13 @@
-import 'package:equatable/equatable.dart';
+abstract class GifEvent {}
 
-abstract class GifEvent extends Equatable {
-  @override
-  List<Object> get props => [];
-}
-
-class GifSearchPressed extends GifEvent {
+class GifSearchPressedEvent extends GifEvent {
   final String query;
 
-  GifSearchPressed(this.query);
+  GifSearchPressedEvent(this.query);
 }
 
-class GifMoreFetched extends GifEvent {
+class GifMoreFetchedEvent extends GifEvent {
   final String query;
-  final bool hasMore;
 
-  GifMoreFetched(this.query, this.hasMore);
+  GifMoreFetchedEvent(this.query);
 }

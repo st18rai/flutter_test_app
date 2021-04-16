@@ -22,74 +22,71 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Container(
-        color: Colors.teal,
-        child: Column(
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  flex: 4,
-                  child: Container(
-                    color: Colors.white,
-                    padding: EdgeInsets.symmetric(horizontal: 15, vertical: 5),
-                    child: TextField(
-                      controller: _textController,
-                      decoration: InputDecoration(
-                          border: InputBorder.none,
-                          hintText: widget.screenData.hintText),
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: FlatButton(
-                    height: 58,
-                    color: Colors.yellow,
-                    child: Icon(
-                      Icons.search,
+    return BlocListener<GifBloc, GifState>(
+      listener: (context, state) {
+        if (state is GifSuccessState) {
+          // print(
+          //     'Home: screenData gifs before add = ${widget.screenData.gifs.length}');
+          widget.screenData.gifs.addAll(state.gifs);
+          widget.screenData.hasMore = state.hasMore;
+        }
+      },
+      child: SafeArea(
+        child: Container(
+          color: Colors.teal,
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    flex: 4,
+                    child: Container(
                       color: Colors.white,
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+                      child: TextField(
+                        controller: _textController,
+                        decoration: InputDecoration(
+                            border: InputBorder.none,
+                            hintText: widget.screenData.hintText),
+                      ),
                     ),
-                    onPressed: () {
-                      widget.screenData.gifs.clear();
-                      widget.screenData.hasMore = true;
-                      widget.screenData.query = _textController.text;
-                      // print(
-                      //     'Home: screenData query = ${widget.screenData.query}');
-                      widget.bloc
-                          .add(GifSearchPressed(widget.screenData.query));
-                      // print('Home: search button');
-                    },
                   ),
-                ),
-              ],
-            ),
-            Expanded(
-              child: BlocListener<GifBloc, GifState>(
-                listener: (context, state) {
-                  if (state is GifSuccess) {
-                    // print(
-                    //     'Home: screenData gifs before add = ${widget.screenData.gifs.length}');
-                    widget.screenData.gifs.addAll(state.gifs);
-
-                    if (widget.screenData.gifs.isEmpty) {
-                      widget.screenData.hasMore = false;
-                    }
-                  }
-                },
+                  Expanded(
+                    child: FlatButton(
+                      height: 58,
+                      color: Colors.yellow,
+                      child: Icon(
+                        Icons.search,
+                        color: Colors.white,
+                      ),
+                      onPressed: () {
+                        widget.screenData.gifs.clear();
+                        widget.screenData.query = _textController.text;
+                        // print(
+                        //     'Home: screenData query = ${widget.screenData.query}');
+                        widget.bloc.add(
+                            GifSearchPressedEvent(widget.screenData.query));
+                        // print('Home: search button');
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              Expanded(
                 child:
                     BlocBuilder<GifBloc, GifState>(builder: (context, state) {
                   // print('Home: state = $state');
 
-                  if (state is GifLoading) {
+                  if (state is GifLoadingState) {
                     return LoadingWidget(Colors.yellowAccent);
                   }
 
-                  if (state is GifFailure) {
+                  if (state is GifFailureState) {
                     return InfoWidget(widget.screenData.errorText);
                   }
 
-                  if (state is GifInitial) {
+                  if (state is GifInitialState) {
                     return InfoWidget(widget.screenData.initialText);
                   }
 
@@ -108,8 +105,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       if (scrollInfo is ScrollEndNotification &&
                           scrollInfo.metrics.extentAfter == 0) {
                         // print('Home: load more');
-                        widget.bloc.add(GifMoreFetched(widget.screenData.query,
-                            widget.screenData.hasMore));
+                        widget.bloc
+                            .add(GifMoreFetchedEvent(widget.screenData.query));
 
                         return true;
                       }
@@ -145,8 +142,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   );
                 }),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

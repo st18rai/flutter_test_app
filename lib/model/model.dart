@@ -7,9 +7,9 @@ class GifResult extends Equatable {
 
   GifResult.fromJson(Map<String, dynamic> json) {
     if (json['data'] != null) {
-      data = new List<Data>();
+      data = List<Data>();
       json['data'].forEach((v) {
-        data.add(new Data.fromJson(v));
+        data.add(Data.fromJson(v));
       });
     }
   }
@@ -24,8 +24,7 @@ class Data {
   Data({this.images});
 
   Data.fromJson(Map<String, dynamic> json) {
-    images =
-        json['images'] != null ? new Images.fromJson(json['images']) : null;
+    images = json['images'] != null ? Images.fromJson(json['images']) : null;
   }
 
   @override
@@ -43,7 +42,7 @@ class Images {
 
   Images.fromJson(Map<String, dynamic> json) {
     downsized = json['downsized'] != null
-        ? new Downsized.fromJson(json['downsized'])
+        ? Downsized.fromJson(json['downsized'])
         : null;
   }
 }
@@ -58,7 +57,7 @@ class Downsized {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = Map<String, dynamic>();
     data['url'] = this.url;
     return data;
   }

@@ -3,15 +3,16 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test_app/ui/bloc/gif_event.dart';
 import 'package:flutter_test_app/ui/bloc/gif_state.dart';
 import 'package:flutter_test_app/src/ds_gif.dart';
-import 'package:flutter_test_app/model/model.dart';
 import 'package:rxdart/rxdart.dart';
 
 class GifBloc extends Bloc<GifEvent, GifState> {
   final GifDs gifDs;
+
   int _offset = 0;
   int _limit = 5;
+  bool _hasMore = true;
 
-  GifBloc({@required this.gifDs}) : super(GifInitial());
+  GifBloc({@required this.gifDs}) : super(GifInitialState());
 
   @override
   Stream<Transition<GifEvent, GifState>> transformEvents(
@@ -28,44 +29,53 @@ class GifBloc extends Bloc<GifEvent, GifState> {
   Stream<GifState> mapEventToState(GifEvent event) async* {
     // print('Bloc: event = $event');
 
-    if (event is GifSearchPressed) {
-      yield GifLoading();
+    if (event is GifSearchPressedEvent) {
+      yield GifLoadingState();
 
       try {
+        _hasMore = true;
         _offset = 0;
-        final gifs = await _getGifs(event.query, _offset, _limit);
-        yield GifSuccess(gifs: gifs);
+
+        final gifs = await gifDs.httpGetGifs(
+            query: event.query, offset: _offset, limit: _limit);
+
+        if (gifs.isEmpty) {
+          _hasMore = false;
+        }
+
+        yield GifSuccessState(gifs: gifs, hasMore: _hasMore);
         // print('Bloc: initial fetched success: ${gifs.length}');
 
         return;
       } catch (_) {
-        yield GifFailure();
+        yield GifFailureState();
       }
     }
 
-    if (event is GifMoreFetched) {
-      // print('Bloc: more fetched state: $currentState');
+    if (event is GifMoreFetchedEvent) {
+      // print('Bloc: more fetched state: $state');
 
       try {
-        if (event.hasMore) {
+        if (_hasMore) {
           _offset = _offset + _limit;
 
-          final gifs = await _getGifs(event.query, _offset, _limit);
-          // print('Bloc: more fetched success: ${gifs.length}');
-          yield GifSuccess(gifs: gifs);
-          // print('Bloc: offset: $_offset');
+          final gifs = await gifDs.httpGetGifs(
+              query: event.query, offset: _offset, limit: _limit);
+          print('Bloc: more fetched success: ${gifs.length}');
+
+          if (gifs.isEmpty) {
+            _hasMore = false;
+          }
+
+          yield GifSuccessState(gifs: gifs, hasMore: _hasMore);
 
           // print('images: ${gifs.toString()}');
         }
         return;
       } catch (e) {
         // print('Bloc: Failure is: + $e');
-        yield GifFailure();
+        yield GifFailureState();
       }
     }
-  }
-
-  Future<List<Data>> _getGifs(String query, int offset, int limit) async {
-    return await gifDs.httpGetGifs(query: query, offset: offset, limit: limit);
   }
 }
