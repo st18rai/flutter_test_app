@@ -12,6 +12,14 @@ void main() {
   GifBloc bloc;
   MockGifDs gifDs;
 
+  final List<Data> testGifs = <Data>[
+    Data(
+      images: Images(
+        downsized: Downsized(url: 'test.com/image'),
+      ),
+    ),
+  ];
+
   setUp(() {
     gifDs = MockGifDs();
     bloc = GifBloc(gifDs: gifDs);
@@ -40,12 +48,8 @@ void main() {
       final query = '123';
       final offset = 0;
 
-      final List<Data> gifs = <Data>[
-        Data(images: Images(downsized: Downsized(url: 'test.com/image'))),
-      ];
-
       when(gifDs.httpGetGifs(query: query, offset: offset))
-          .thenAnswer((_) async => gifs);
+          .thenAnswer((_) async => testGifs);
 
       bloc.add(GifSearchPressedEvent(query));
 
@@ -54,7 +58,7 @@ void main() {
         emitsInOrder([
           GifInitialState(),
           GifLoadingState(),
-          GifSuccessState(gifs: gifs, hasMore: true)
+          GifSuccessState(gifs: testGifs, hasMore: true)
         ]),
       );
     });
@@ -80,19 +84,17 @@ void main() {
       final query = '123';
       final offset = 5;
 
-      final List<Data> gifs = <Data>[
-        Data(images: Images(downsized: Downsized(url: 'test.com/image'))),
-      ];
-
       when(gifDs.httpGetGifs(query: query, offset: offset))
-          .thenAnswer((_) async => gifs);
+          .thenAnswer((_) async => testGifs);
 
       bloc.add(GifMoreFetchedEvent(query));
 
       expectLater(
         bloc,
-        emitsInOrder(
-            [GifInitialState(), GifSuccessState(gifs: gifs, hasMore: true)]),
+        emitsInOrder([
+          GifInitialState(),
+          GifSuccessState(gifs: testGifs, hasMore: true)
+        ]),
       );
     });
 

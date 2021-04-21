@@ -27,8 +27,6 @@ class GifBloc extends Bloc<GifEvent, GifState> {
 
   @override
   Stream<GifState> mapEventToState(GifEvent event) async* {
-    // print('Bloc: event = $event');
-
     if (event is GifSearchPressedEvent) {
       yield GifLoadingState();
 
@@ -44,7 +42,6 @@ class GifBloc extends Bloc<GifEvent, GifState> {
         }
 
         yield GifSuccessState(gifs: gifs, hasMore: _hasMore);
-        // print('Bloc: initial fetched success: ${gifs.length}');
 
         return;
       } catch (_) {
@@ -53,27 +50,21 @@ class GifBloc extends Bloc<GifEvent, GifState> {
     }
 
     if (event is GifMoreFetchedEvent) {
-      // print('Bloc: more fetched state: $state');
-
       try {
         if (_hasMore) {
           _offset = _offset + _limit;
 
           final gifs = await gifDs.httpGetGifs(
               query: event.query, offset: _offset, limit: _limit);
-          print('Bloc: more fetched success: ${gifs.length}');
 
           if (gifs.isEmpty) {
             _hasMore = false;
           }
 
           yield GifSuccessState(gifs: gifs, hasMore: _hasMore);
-
-          // print('images: ${gifs.toString()}');
         }
         return;
       } catch (e) {
-        // print('Bloc: Failure is: + $e');
         yield GifFailureState();
       }
     }

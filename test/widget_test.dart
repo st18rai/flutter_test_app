@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_test_app/model/model.dart';
 
 import 'package:flutter_test_app/ui/bloc/gif_bloc.dart';
 import 'package:flutter_test_app/ui/bloc/gif_state.dart';
 import 'package:flutter_test_app/ui/page/home_screen.dart';
 import 'package:mockito/mockito.dart';
+
+import 'image_test_util.dart';
 
 class MockGifBloc extends Mock implements GifBloc {}
 
@@ -27,17 +30,18 @@ void main() {
   });
 
   Future _createWidget(WidgetTester tester) async {
-    await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: BlocProvider<GifBloc>(
-            create: (context) => _bloc,
-            child: HomeScreen(_bloc, _screenData),
+    await provideMockedNetworkImages(() async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: BlocProvider<GifBloc>(
+              create: (context) => _bloc,
+              child: HomeScreen(_bloc, _screenData),
+            ),
           ),
         ),
-      ),
-    );
-    await tester.pump();
+      );
+    });
   }
 
   testWidgets('check initial text', (WidgetTester tester) async {
@@ -82,21 +86,21 @@ void main() {
         reason: 'Should be: "Nothing found"');
   });
 
-  // testWidgets('check gifs loaded', (WidgetTester tester) async {
-  //   _screenData.gifs = <Data>[
-  //     Data(
-  //         images: Images(
-  //             downsized: Downsized(
-  //                 url:
-  //                     'https://media2.giphy.com/media/8ByB3sXbFcmpxzz3s0/giphy.gif?cid=ecf05e47b02kvbmyxrztqf449a5pb2t0jqxjvn2hquo7qoim&rid=giphy.gif&ct=g'))),
-  //   ];
-  //
-  //   when(_bloc.state)
-  //       .thenReturn(GifSuccessState(gifs: _screenData.gifs, hasMore: true));
-  //
-  //   await _createWidget(tester);
-  //
-  //   expect(find.byType(ListView), findsOneWidget,
-  //       reason: 'Should be: listView with gifs');
-  // });
+  testWidgets('check gifs loaded', (WidgetTester tester) async {
+    _screenData.gifs = <Data>[
+      Data(
+        images: Images(
+          downsized: Downsized(url: 'https://test.com/image1'),
+        ),
+      ),
+    ];
+
+    when(_bloc.state)
+        .thenReturn(GifSuccessState(gifs: _screenData.gifs, hasMore: true));
+
+    await _createWidget(tester);
+
+    expect(find.byType(ListView), findsOneWidget,
+        reason: 'Should be: listView with gifs');
+  });
 }

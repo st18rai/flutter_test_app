@@ -9,11 +9,12 @@ class GifDs {
   final String _rating = 'g';
   final String _language = 'en';
 
-  Future<List<Data>> httpGetGifs(
-      {@required String query, @required int offset, int limit = 5}) async {
+  Future<List<Data>> httpGetGifs({
+    @required String query,
+    @required int offset,
+    int limit = 5,
+  }) async {
     List<Data> listGifsData = <Data>[];
-
-    // print('Data Store: offset = $offset');
 
     String url =
         '$_baseUrl?api_key=$_apiKey&q=$query&limit=$limit&offset=$offset&rating=$_rating&lang=$_language';

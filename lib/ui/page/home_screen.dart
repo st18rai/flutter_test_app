@@ -25,8 +25,6 @@ class _HomeScreenState extends State<HomeScreen> {
     return BlocListener<GifBloc, GifState>(
       listener: (context, state) {
         if (state is GifSuccessState) {
-          // print(
-          //     'Home: screenData gifs before add = ${widget.screenData.gifs.length}');
           widget.screenData.gifs.addAll(state.gifs);
           widget.screenData.hasMore = state.hasMore;
         }
@@ -63,11 +61,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       onPressed: () {
                         widget.screenData.gifs.clear();
                         widget.screenData.query = _textController.text;
-                        // print(
-                        //     'Home: screenData query = ${widget.screenData.query}');
                         widget.bloc.add(
                             GifSearchPressedEvent(widget.screenData.query));
-                        // print('Home: search button');
                       },
                     ),
                   ),
@@ -76,8 +71,6 @@ class _HomeScreenState extends State<HomeScreen> {
               Expanded(
                 child:
                     BlocBuilder<GifBloc, GifState>(builder: (context, state) {
-                  // print('Home: state = $state');
-
                   if (state is GifLoadingState) {
                     return LoadingWidget(Colors.yellowAccent);
                   }
@@ -90,21 +83,14 @@ class _HomeScreenState extends State<HomeScreen> {
                     return InfoWidget(widget.screenData.initialText);
                   }
 
-                  // print('Home: gif success');
-
                   if (widget.screenData.gifs.isEmpty) {
                     return InfoWidget(widget.screenData.nothingFoundText);
                   }
-
-                  // print(
-                  //     'Home: screenData gifs after add = ${widget.screenData.gifs.length}');
-                  // print('Home: state gifs = ${state.gifs.length}');
 
                   return NotificationListener<ScrollNotification>(
                     onNotification: (ScrollNotification scrollInfo) {
                       if (scrollInfo is ScrollEndNotification &&
                           scrollInfo.metrics.extentAfter == 0) {
-                        // print('Home: load more');
                         widget.bloc
                             .add(GifMoreFetchedEvent(widget.screenData.query));
 
