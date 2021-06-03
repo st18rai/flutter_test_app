@@ -9,8 +9,8 @@ import 'package:mockito/mockito.dart';
 class MockGifDs extends Mock implements GifDs {}
 
 void main() {
-  GifBloc bloc;
-  MockGifDs gifDs;
+  late GifBloc bloc;
+  late MockGifDs gifDs;
 
   final List<Data> testGifs = <Data>[
     Data(
@@ -29,18 +29,8 @@ void main() {
     bloc.close();
   });
 
-  group('init bloc tests', () {
-    test('check init state pass', () {
-      expect(bloc.state, GifInitialState());
-    });
-
-    test('close does not emit new states', () {
-      expectLater(
-        bloc,
-        emitsInOrder([GifInitialState(), emitsDone]),
-      );
-      bloc.close();
-    });
+  test('check init state pass', () {
+    expect(bloc.state, GifInitialState());
   });
 
   group('search pressed tests', () {
@@ -54,11 +44,10 @@ void main() {
       bloc.add(GifSearchPressedEvent(query));
 
       expectLater(
-        bloc,
+        bloc.stream,
         emitsInOrder([
-          GifInitialState(),
-          GifLoadingState(),
-          GifSuccessState(gifs: testGifs, hasMore: true)
+          predicate((dynamic it) => it is GifLoadingState),
+          predicate((dynamic it) => it is GifSuccessState),
         ]),
       );
     });
@@ -73,8 +62,11 @@ void main() {
       bloc.add(GifSearchPressedEvent(query));
 
       expectLater(
-        bloc,
-        emitsInOrder([GifInitialState(), GifLoadingState(), GifFailureState()]),
+        bloc.stream,
+        emitsInOrder([
+          predicate((dynamic it) => it is GifLoadingState),
+          predicate((dynamic it) => it is GifFailureState),
+        ]),
       );
     });
   });
@@ -90,10 +82,9 @@ void main() {
       bloc.add(GifMoreFetchedEvent(query));
 
       expectLater(
-        bloc,
+        bloc.stream,
         emitsInOrder([
-          GifInitialState(),
-          GifSuccessState(gifs: testGifs, hasMore: true)
+          predicate((dynamic it) => it is GifSuccessState),
         ]),
       );
     });
@@ -108,8 +99,10 @@ void main() {
       bloc.add(GifMoreFetchedEvent(query));
 
       expectLater(
-        bloc,
-        emitsInOrder([GifInitialState(), GifFailureState()]),
+        bloc.stream,
+        emitsInOrder([
+          predicate((dynamic it) => it is GifFailureState),
+        ]),
       );
     });
   });

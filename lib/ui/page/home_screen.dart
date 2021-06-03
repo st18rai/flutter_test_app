@@ -23,7 +23,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return BlocListener<GifBloc, GifState>(
-      listener: (context, state) {
+      listener: (context, dynamic state) {
         if (state is GifSuccessState) {
           widget.screenData.gifs.addAll(state.gifs);
           widget.screenData.hasMore = state.hasMore;
@@ -115,7 +115,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           return LoadingWidget(Colors.white);
                         } else {
                           return Image.network(
-                            widget.screenData.gifs[index].images.downsized.url,
+                            widget
+                                .screenData.gifs[index].images!.downsized!.url,
                             loadingBuilder: (context, widget, imageChunkEvent) {
                               return imageChunkEvent == null
                                   ? widget
@@ -148,7 +149,7 @@ class HomeScreenData {
   final String initialText = 'Start searching gifs!';
   final String errorText = 'Something went wrong';
 
-  String query;
+  late String query;
   List<Data> gifs = <Data>[];
   bool hasMore = true;
 }

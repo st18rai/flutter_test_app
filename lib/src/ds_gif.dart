@@ -10,8 +10,8 @@ class GifDs {
   final String _language = 'en';
 
   Future<List<Data>> httpGetGifs({
-    @required String query,
-    @required int offset,
+    required String query,
+    required int offset,
     int limit = 5,
   }) async {
     List<Data> listGifsData = <Data>[];

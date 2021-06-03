@@ -4,24 +4,39 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_test_app/model/model.dart';
 
 import 'package:flutter_test_app/ui/bloc/gif_bloc.dart';
+import 'package:flutter_test_app/ui/bloc/gif_event.dart';
 import 'package:flutter_test_app/ui/bloc/gif_state.dart';
 import 'package:flutter_test_app/ui/page/home_screen.dart';
 import 'package:mockito/mockito.dart';
 
 import 'image_test_util.dart';
 
-class MockGifBloc extends Mock implements GifBloc {}
+class MockedBaseBloc<E, S> extends Mock implements Bloc<E, S> {
+  @override
+  void add(E? event) {
+    return super.noSuchMethod(
+      Invocation.method(#add, [event]),
+    );
+  }
+
+  @override
+  Stream<S> get stream => super.noSuchMethod(
+        Invocation.getter(#stream),
+        returnValue: Stream<S>.empty(),
+        returnValueForMissingStub: Stream<S>.empty(),
+      );
+}
+
+class MockGifBloc extends MockedBaseBloc<GifEvent, GifState>
+    implements GifBloc {}
 
 void main() {
   // ignore: close_sinks
-  MockGifBloc _bloc;
-  HomeScreenData _screenData;
+  late MockGifBloc _bloc;
+  late HomeScreenData _screenData;
 
   setUp(() {
     _bloc = MockGifBloc();
-    when(_bloc.skip(any)).thenAnswer((_) async* {
-      null;
-    });
     _screenData = HomeScreenData();
   });
 

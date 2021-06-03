@@ -1,13 +1,12 @@
 import 'package:equatable/equatable.dart';
 
 class GifResult extends Equatable {
-  List<Data> data;
+  List<Data> data = <Data>[];
 
-  GifResult({this.data});
+  GifResult({required this.data});
 
   GifResult.fromJson(Map<String, dynamic> json) {
     if (json['data'] != null) {
-      data = List<Data>();
       json['data'].forEach((v) {
         data.add(Data.fromJson(v));
       });
@@ -19,38 +18,38 @@ class GifResult extends Equatable {
 }
 
 class Data {
-  Images images;
+  Images? images;
 
-  Data({this.images});
+  Data({required this.images});
 
   Data.fromJson(Map<String, dynamic> json) {
-    images = json['images'] != null ? Images.fromJson(json['images']) : null;
+    images = (json['images'] != null ? Images.fromJson(json['images']) : null)!;
   }
 
   @override
   String toString() {
-    return 'Images: ${images.downsized.url}\n';
+    return 'Images: ${images?.downsized?.url}\n';
   }
 }
 
 class Images {
-  Downsized downsized;
+  Downsized? downsized;
 
   Images({
-    this.downsized,
+    required this.downsized,
   });
 
   Images.fromJson(Map<String, dynamic> json) {
-    downsized = json['downsized'] != null
+    downsized = (json['downsized'] != null
         ? Downsized.fromJson(json['downsized'])
-        : null;
+        : null)!;
   }
 }
 
 class Downsized {
-  String url;
+  late String url;
 
-  Downsized({this.url});
+  Downsized({required this.url});
 
   Downsized.fromJson(Map<String, dynamic> json) {
     url = json['url'];

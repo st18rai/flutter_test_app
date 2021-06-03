@@ -11,20 +11,46 @@ R provideMockedNetworkImages<R>(R body(),
   );
 }
 
-class MockHttpClient extends Mock implements HttpClient {}
+class MockHttpClient extends Mock implements HttpClient {
+  final HttpClientRequest? httpClientRequestForGetUrl;
+
+  MockHttpClient({
+    this.httpClientRequestForGetUrl,
+  });
+
+  @override
+  Future<HttpClientRequest> getUrl(Uri? url) async {
+    return super.noSuchMethod(
+      Invocation.method(#getUrl, [url]),
+      returnValue: httpClientRequestForGetUrl ?? MockHttpClientRequest(),
+      returnValueForMissingStub:
+          httpClientRequestForGetUrl ?? MockHttpClientRequest(),
+    );
+  }
+}
 
 class MockHttpClientRequest extends Mock implements HttpClientRequest {}
 
-class MockHttpClientResponse extends Mock implements HttpClientResponse {}
+class MockHttpClientResponse extends Mock implements HttpClientResponse {
+  @override
+  HttpClientResponseCompressionState get compressionState => super.noSuchMethod(
+        Invocation.getter(#compressionState),
+        returnValue: HttpClientResponseCompressionState.notCompressed,
+        returnValueForMissingStub:
+            HttpClientResponseCompressionState.notCompressed,
+      );
+}
 
 class MockHttpHeaders extends Mock implements HttpHeaders {}
 
 MockHttpClient _createMockImageHttpClient(
-    SecurityContext _, List<int> imageBytes) {
-  final MockHttpClient client = MockHttpClient();
-  final MockHttpClientRequest request = MockHttpClientRequest();
-  final MockHttpClientResponse response = MockHttpClientResponse();
-  final MockHttpHeaders headers = MockHttpHeaders();
+  SecurityContext? _,
+  List<int> imageBytes,
+) {
+  final request = MockHttpClientRequest();
+  final client = MockHttpClient(httpClientRequestForGetUrl: request);
+  final response = MockHttpClientResponse();
+  final headers = MockHttpHeaders();
 
   when(client.getUrl(any))
       .thenAnswer((_) => Future<HttpClientRequest>.value(request));
@@ -34,11 +60,11 @@ MockHttpClient _createMockImageHttpClient(
   when(response.contentLength).thenReturn(_transparentImage.length);
   when(response.statusCode).thenReturn(HttpStatus.ok);
   when(response.listen(any)).thenAnswer((Invocation invocation) {
-    final void Function(List<int>) onData = invocation.positionalArguments[0];
-    final void Function() onDone = invocation.namedArguments[#onDone];
-    final void Function(Object, [StackTrace]) onError =
+    final void Function(List<int>)? onData = invocation.positionalArguments[0];
+    final void Function()? onDone = invocation.namedArguments[#onDone];
+    final void Function(Object, [StackTrace?])? onError =
         invocation.namedArguments[#onError];
-    final bool cancelOnError = invocation.namedArguments[#cancelOnError];
+    final bool? cancelOnError = invocation.namedArguments[#cancelOnError];
 
     return Stream<List<int>>.fromIterable(<List<int>>[imageBytes]).listen(
         onData,
@@ -50,7 +76,7 @@ MockHttpClient _createMockImageHttpClient(
   return client;
 }
 
-const List<int> _transparentImage = const <int>[
+const List<int> _transparentImage = <int>[
   0x89,
   0x50,
   0x4E,

@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test_app/ui/bloc/gif_event.dart';
 import 'package:flutter_test_app/ui/bloc/gif_state.dart';
@@ -12,7 +11,7 @@ class GifBloc extends Bloc<GifEvent, GifState> {
   int _limit = 5;
   bool _hasMore = true;
 
-  GifBloc({@required this.gifDs}) : super(GifInitialState());
+  GifBloc({required this.gifDs}) : super(GifInitialState());
 
   @override
   Stream<Transition<GifEvent, GifState>> transformEvents(

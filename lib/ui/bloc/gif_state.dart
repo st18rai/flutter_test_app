@@ -18,7 +18,7 @@ class GifSuccessState extends GifState {
   final List<Data> gifs;
   final bool hasMore;
 
-  const GifSuccessState({this.gifs, this.hasMore});
+  const GifSuccessState({required this.gifs, required this.hasMore});
 
   @override
   List<Object> get props => [gifs, hasMore];
